@@ -352,7 +352,7 @@ Pong = {
 
     setLevel: function(level) {
       if (this.auto)
-        this.level = Pong.Levels[level];
+        this.level = Pong.Levels[10];
     },
 
     update: function(dt, ball) {
