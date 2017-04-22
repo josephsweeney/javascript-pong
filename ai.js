@@ -10,8 +10,8 @@ class AI {
     this.k = 0
     this.kmax = 1000
     this.nextEnergy = null
-    this.state = [1.0,1.0,1.0,1.0,1.0,1.0,1.0]
-    this.energy = 10
+    this.state = [0,-1.0,0,0,0,0,1.0]
+    this.energy = 7
     this.candidate = null
     console.log(game)
 
@@ -90,17 +90,22 @@ class AI {
 
   generateCandidate() {
     let newCoeffs = []
+    let changeIndex = Math.floor(Math.random()*this.state.length)
     for(let i = 0; i<this.state.length; i++) {
-      let r = Math.random()
-      let diff = 0
-      if(r<0.05) {
-        // Try a big jump
-        diff = (Math.random() * 100 ) - 50
+      if(i === changeIndex) {
+        let r = Math.random()
+        let diff = 0
+        if(r<0.05) {
+          // Try a big jump
+          diff = (Math.random() * 100 ) - 50
+        } else {
+          // Tweak it
+          diff = Math.random() * 2 - 1
+        }
+        newCoeffs.push(this.state[i]+diff)
       } else {
-        // Tweak it
-        diff = Math.random() * 2 - 1
+        newCoeffs.push(this.state[i])
       }
-      newCoeffs.push(this.state[i]+diff)
     }
     this.candidate = newCoeffs
   }
@@ -126,8 +131,8 @@ class AI {
   }
 
   getMove() {
-    let downThreshold = -10
-    let upThreshold = 10
+    let downThreshold = -100
+    let upThreshold = 100
     let params = this.getParameters()
     let sum = 0
     for(let i = 0; i<params.length; i++) {
