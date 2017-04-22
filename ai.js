@@ -36,6 +36,14 @@ class AI {
     localStorage.setItem("pongAI", JSON.stringify(store))
   }
 
+  dumpState() {
+    let store = {
+      energy: this.energy,
+      state: this.state
+    }
+    localStorage.setItem("tmppongAI", JSON.stringify(store))
+  }
+
   sendKeyDown(key) {
     let keycode = key.charCodeAt(0);
     this.game.onkeydown(keycode)
@@ -62,6 +70,7 @@ class AI {
       console.log("accepted candidate, new energy is: "+this.energy)
     }
     if(this.k<this.kmax) {
+      this.dumpState()
       this.startLearning()
     } else {
       this.saveState()
@@ -83,15 +92,15 @@ class AI {
     let newCoeffs = []
     for(let i = 0; i<this.state.length; i++) {
       let r = Math.random()
-      let factor = 1.0
+      let diff = 0
       if(r<0.05) {
         // Try a big jump
-        factor = (Math.random() * 100 ) - 50
+        diff = (Math.random() * 100 ) - 50
       } else {
         // Tweak it
-        factor = Math.random()+0.5
+        diff = Math.random() * 2 - 1
       }
-      newCoeffs.push(this.state[i]*factor)
+      newCoeffs.push(this.state[i]+diff)
     }
     this.candidate = newCoeffs
   }
