@@ -8,9 +8,9 @@ class AI {
     this.score = [0,0]
     this.playing = false
     this.k = 0
-    this.kmax = 10000
+    this.kmax = 1000
     this.nextEnergy = null
-    this.state = [0,-1.0,0,0,0,0,1.0]
+    this.state = [0,-10.0,0,0,0,0,10.0]
     this.energy = 0
     this.candidate = null
     this.learning = false
@@ -88,31 +88,29 @@ class AI {
   }
 
   acceptanceProb() {
-    let opponentScorePenalty = this.opponentScored ? 0 : 0
-    this.nextEnergy = -this.paddleHits + opponentScorePenalty
-    let p = Math.exp((this.energy-this.nextEnergy)/(this.k*0.01))
+    let opponentScorePenalty = this.opponentScored ? 1 : 0
+    let scoreBonus = this.playerScored ? -100 : 0
+    this.nextEnergy = this.paddleHits === 0
+      ? 10
+      : -this.paddleHits + opponentScorePenalty
+    let p = Math.exp((this.energy-this.nextEnergy))/2
     console.log("acceptanceProb: "+p+" nextEnergy: "+this.nextEnergy)
     return p
   }
 
   generateCandidate() {
     let newCoeffs = []
-    let changeIndex = Math.floor(Math.random()*this.state.length)
     for(let i = 0; i<this.state.length; i++) {
-      if(i === changeIndex) {
-        let r = Math.random()
-        let diff = 0
-        if(r<0.1) {
-          // Try a big jump
-          diff = (Math.random() * 100 ) - 50
-        } else {
-          // Tweak it
-          diff = Math.random() * 2 - 1
-        }
-        newCoeffs.push(this.state[i]+diff)
-      } else {
-        newCoeffs.push(this.state[i])
+      let r = Math.random()
+      let diff = 0
+      if(r<0.333) {
+        diff = 1.0
+      } else if(r<0.666) {
+        diff = -1.0
       }
+      // diff *= Math.random()*2
+      newCoeffs.push(this.state[i]+diff)
+
     }
     this.candidate = newCoeffs
   }
@@ -125,6 +123,7 @@ class AI {
     this.paddleHits = 0
     this.lastDirection = 0
     this.opponentScored = false
+    this.playerScored = false
     this.intervalID = window.setInterval(this.makeMove.bind(this), intervalTime)
   }
 
@@ -138,6 +137,7 @@ class AI {
     let difference = this.updateScores()
     if((difference[0] !== 0 || difference[1] !== 0) && this.learning) {
       this.opponentScored = difference[1] !== 0
+      this.playerScored = difference[0] !== 0
       this.playAgain()
     }
     let dir = this.getMove()
