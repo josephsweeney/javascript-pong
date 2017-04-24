@@ -10,8 +10,8 @@ Pong = {
     wallWidth:    12,
     paddleWidth:  12,
     paddleHeight: 60,
-    paddleSpeed:  2*0.05,     // should be able to cross court vertically   in 2 seconds
-    ballSpeed:    4*0.05,     // should be able to cross court horizontally in 4 seconds, at starting speed ...
+    paddleSpeed:  2*0.1,     // should be able to cross court vertically   in 2 seconds
+    ballSpeed:    4*0.1,     // should be able to cross court horizontally in 4 seconds, at starting speed ...
     ballAccel:    8,     // ... but accelerate as time passes
     ballRadius:   5,
     sound:        true
@@ -352,7 +352,7 @@ Pong = {
 
     setLevel: function(level) {
       if (this.auto)
-        this.level = Pong.Levels[8];
+        this.level = Pong.Levels[0];
     },
 
     update: function(dt, ball) {

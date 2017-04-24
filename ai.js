@@ -8,11 +8,13 @@ class AI {
     this.score = [0,0]
     this.playing = false
     this.k = 0
-    this.kmax = 1000
+    this.kmax = 10000
     this.nextEnergy = null
     this.state = [0,-1.0,0,0,0,0,1.0]
-    this.energy = 7
+    this.energy = 0
     this.candidate = null
+    this.learning = false
+    this.opponentScored = false
     console.log(game)
 
     this.loadState()
@@ -55,21 +57,25 @@ class AI {
   }
 
   startLearning() {
+    this.learning = true
     console.log("learning: "+this.k)
+    this.generateCandidate()
     if(!this.playing) {
-      this.generateCandidate()
       this.evaluateCandidate()
     }
   }
 
   playAgain() {
-    this.k += 1
-    if(this.acceptanceProb() >= Math.random()) {
-      this.state = this.candidate
-      this.energy = this.nextEnergy
-      console.log("accepted candidate, new energy is: "+this.energy)
-    }
     if(this.k<this.kmax) {
+      this.k += 1
+      if(this.acceptanceProb() >= Math.random()) {
+        this.state = this.candidate
+        this.energy = this.nextEnergy
+        console.log("accepted candidate, new energy is: "+this.energy)
+      }
+      if(this.playing) {
+        this.paddleHits = 0
+      }
       this.dumpState()
       this.startLearning()
     } else {
@@ -82,8 +88,9 @@ class AI {
   }
 
   acceptanceProb() {
-    this.nextEnergy = this.score[1]-this.score[0]
-    let p = Math.exp(this.energy-this.nextEnergy)
+    let opponentScorePenalty = this.opponentScored ? 0 : 0
+    this.nextEnergy = -this.paddleHits + opponentScorePenalty
+    let p = Math.exp((this.energy-this.nextEnergy)/(this.k*0.01))
     console.log("acceptanceProb: "+p+" nextEnergy: "+this.nextEnergy)
     return p
   }
@@ -95,7 +102,7 @@ class AI {
       if(i === changeIndex) {
         let r = Math.random()
         let diff = 0
-        if(r<0.05) {
+        if(r<0.1) {
           // Try a big jump
           diff = (Math.random() * 100 ) - 50
         } else {
@@ -115,19 +122,27 @@ class AI {
     this.sendKeyDown("1")
     let fps = 1000
     let intervalTime = 1000.0/fps
+    this.paddleHits = 0
+    this.lastDirection = 0
+    this.opponentScored = false
     this.intervalID = window.setInterval(this.makeMove.bind(this), intervalTime)
   }
 
   makeMove() {
-    if(this.isTerminal()) {
+    if(this.isTerminal() && this.learning) {
       window.clearInterval(this.intervalID)
       this.playing = false
       this.playAgain()
     }
     let up = 1, down = 2, stop = 0
     let difference = this.updateScores()
+    if((difference[0] !== 0 || difference[1] !== 0) && this.learning) {
+      this.opponentScored = difference[1] !== 0
+      this.playAgain()
+    }
     let dir = this.getMove()
     this.move(dir)
+    this.checkForHit()
   }
 
   getMove() {
@@ -135,8 +150,9 @@ class AI {
     let upThreshold = 100
     let params = this.getParameters()
     let sum = 0
+    let coeffs = this.learning ? this.candidate : this.state
     for(let i = 0; i<params.length; i++) {
-      sum += params[i]*this.candidate[i]
+      sum += params[i]*coeffs[i]
     }
     if(sum < downThreshold) {
       return 2
@@ -147,27 +163,20 @@ class AI {
     }
   }
 
-  // makeMove() {
-  //   if(this.isTerminal())   {
-  //     window.clearInterval(this.intervalID)
-  //     this.playing = false
-  //   }
-  //   let paddle = this.game.leftPaddle
-  //   let ball = this.game.ball
-  //   let up = 1, down = 2, stop = 0
-  //   if(paddle.y+(paddle.height/2)<ball.y) {
-  //     // move down
-  //     this.move(down)
-  //   }
-  //   else if (paddle.y+(paddle.height/2)>ball.y) {
-  //     this.move(up)
-  //   }
-  // }
+  checkForHit() {
+    let ball = this.game.ball
+    let direction = ball.dx < 0 ? -1 : 1
+    if(this.lastDirection === -1 && direction === 1) {
+      this.paddleHits += 1
+    }
+    this.lastDirection = direction
+  }
 
   updateScores() {
-    let newScores = this.game.scores
+    let newScores = [this.game.scores[0],this.game.scores[1]]
     let difference = [newScores[0]-this.score[0],newScores[1]-this.score[1]]
     if(difference[0] !== 0 || difference[1] !== 0) {
+
       this.score = newScores
     }
     return difference
