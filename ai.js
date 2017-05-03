@@ -118,7 +118,7 @@ class AI {
   startGame() {
     this.playing = true
     this.sendKeyDown("1")
-    let fps = 1000
+    let fps = 60
     let intervalTime = 1000.0/fps
     this.paddleHits = 0
     this.lastDirection = 0
