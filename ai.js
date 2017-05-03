@@ -10,16 +10,16 @@ class AI {
     this.k = 0
     this.kmax = 1000
     this.nextEnergy = null
-    this.state = [0,-10.0,0,0,0,0,10.0]
-    this.energy = 0
+    this.state =[3,-12,0,0,0,4,13]
+    this.energy = -300
     this.candidate = null
     this.learning = false
     this.opponentScored = false
     console.log(game)
 
     this.loadState()
-    // window.onload = this.startGame.bind(this)
-    window.onload = this.startLearning.bind(this)
+    window.onload = this.startGame.bind(this)
+    //window.onload = this.startLearning.bind(this)
   }
 
   loadState() {
