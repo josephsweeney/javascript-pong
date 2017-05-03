@@ -13,3 +13,7 @@ I ended up changing the energy so that if a candidate never hit the ball, it got
 
 Other changes I made were to the game were so the built in AI played perfectly by predicting where the ball would hit, and multiplying the speed of the game by 10 so I could evaluate more candidates. I used local browser storage to store weights between games and different AI implementations. 
 
+
+To see it in action, go here:
+
+https://josephsweeney.github.io/javascript-pong/
